@@ -1,14 +1,12 @@
+import { Request, Response } from "express";
 import User from "../models/User.model.js";
 
-export const getEmployees = async (req, res) => {
+export const getUsers = async (req: Request, res: Response) => {
   try {
-    const employees = await User.find({ role: "employee" }).select(
-      "_id name role department"
-    );
+    const users = await User.find().select("_id name role department");
 
-    res.status(200).json(employees);
+    res.json(users);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "Server Error" });
+    res.status(500).json({ message: "Failed to fetch users" });
   }
 };
