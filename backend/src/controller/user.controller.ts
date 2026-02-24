@@ -1,7 +1,7 @@
 import type { Request, Response } from "express";
 import User from "../models/User.model.js";
 
-export const getUsers = async (req: Request, res: Response) => {
+export const getEmployees = async (req: Request, res: Response) => {
   try {
     const users = await User.find().select("_id name role department");
 
