@@ -6,6 +6,7 @@ import healthRoutes from "./routes/v1/health.routes.js";
 import authRoutes from "./routes/v1/auth.routes.js";
 import taskRoutes from "./routes/v1/task.routes.js";
 import dashboardRoutes from "./routes/v1/dashboard.routes.js";
+import userRoutes from "./routes/v1/user.routes.js";
 
 dotenv.config();
 
@@ -18,5 +19,6 @@ app.use("/api/v1/health", healthRoutes);
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/tasks", taskRoutes);
 app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1", userRoutes);
 
 export default app;
