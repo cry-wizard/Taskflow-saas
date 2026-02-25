@@ -5,7 +5,8 @@ import AdminDashboard from "./admin/pages/AdminDashboard";
 import AdminTaskList from "./admin/pages/AdminTaskList";
 import AuthPage from "./auth/pages/AuthPage";
 import AdminEmployees from "./admin/pages/AdminEmployees";
-
+import EmployeeLayout from "./employee/layout/EmployeeLayout";
+import EmployeeDashboard from "./employee/pages/EmployeeDashboard";
 /* ✅ Protected Route */
 function ProtectedRoute({ children }) {
   const token = localStorage.getItem("token");
@@ -36,6 +37,9 @@ export default function App() {
         <Route path="tasks" element={<AdminTaskList />} />
         <Route path="employees" element={<AdminEmployees />} /> 
       </Route>
+      <Route path="/employee" element={<EmployeeLayout />}>
+  <Route index element={<EmployeeDashboard />} />
+</Route>
     </Routes>
   );
 }

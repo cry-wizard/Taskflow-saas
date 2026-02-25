@@ -19,7 +19,7 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
 
   useEffect(() => {
     if (!isOpen) return;
-    
+
     const fetchEmployees = async () => {
       setFetching(true);
       try {
@@ -58,13 +58,20 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
   };
 
   const handleClose = () => {
-    setForm({ title: "", description: "", priority: "medium", deadline: "", assignedTo: "" });
+    setForm({
+      title: "",
+      description: "",
+      priority: "Medium",
+      deadline: "",
+      assignedTo: "",
+    });
     setError("");
     onClose();
   };
 
   // Reusable Tailwind classes for consistency
-  const inputClasses = "w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700";
+  const inputClasses =
+    "w-full px-4 py-2.5 bg-gray-50 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-gray-700";
   const labelClasses = "block text-sm font-medium text-gray-700 mb-1 ml-1";
 
   return (
@@ -72,7 +79,7 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
       {isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           {/* Backdrop */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -90,7 +97,10 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
             {/* Header */}
             <div className="flex items-center justify-between px-8 py-6 border-b">
               <h2 className="text-xl font-bold text-gray-800">New Task</h2>
-              <button onClick={handleClose} className="p-1 hover:bg-gray-100 rounded-full transition-colors">
+              <button
+                onClick={handleClose}
+                className="p-1 hover:bg-gray-100 rounded-full transition-colors"
+              >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
@@ -137,10 +147,9 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
                       onChange={handleChange}
                       className={`${inputClasses} pl-10 appearance-none`}
                     >
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
+                      <option value="Low">Low</option>
+                      <option value="Medium">Medium</option>
+                      <option value="High">High</option>
                     </select>
                   </div>
                 </div>
@@ -173,7 +182,9 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
                     required
                     disabled={fetching}
                   >
-                    <option value="">{fetching ? "Loading team..." : "Select Employee"}</option>
+                    <option value="">
+                      {fetching ? "Loading team..." : "Select Employee"}
+                    </option>
                     {employees.map((emp) => (
                       <option key={emp._id} value={emp._id}>
                         {emp.name} — {emp.role}
@@ -198,7 +209,11 @@ export default function CreateTaskModal({ isOpen, onClose, onCreated }) {
                   disabled={loading}
                   className="flex items-center justify-center min-w-[120px] px-6 py-2.5 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-bold rounded-xl shadow-lg shadow-blue-200 transition-all active:scale-95"
                 >
-                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Task"}
+                  {loading ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    "Create Task"
+                  )}
                 </button>
               </div>
             </form>

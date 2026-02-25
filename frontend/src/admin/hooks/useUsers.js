@@ -1,17 +1,25 @@
 import { useEffect, useState } from "react";
-import { fetchUsers } from "../api/user.api";
+import api from "../../api/axios";
 
 export default function useUsers() {
   const [users, setUsers] = useState([]);
-
-  const refetch = async () => {
-    const data = await fetchUsers();
-    setUsers(data || []);
-  };
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    refetch();
+    const fetchUsers = async () => {
+      try {
+        /* 🔥 CHANGE ENDPOINT IF NEEDED */
+        const res = await api.get("/employees"); 
+        setUsers(res.data || []);
+      } catch (err) {
+        console.log("Users fetch failed", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
   }, []);
 
-  return { users, refetch };
+  return { users, loading };
 }

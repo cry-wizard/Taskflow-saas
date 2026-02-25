@@ -9,7 +9,7 @@ export default function RegisterForm({ goLogin }) {
     lastName: "",
     email: "",
     password: "",
-    role: "employee", // ✅ default role
+    role: "employee", 
   });
 
   const handleChange = (e) => {
@@ -20,7 +20,12 @@ export default function RegisterForm({ goLogin }) {
     e.preventDefault();
 
     try {
-      await api.post("/auth/register", form);
+      await api.post("/auth/register", {
+        name: `${form.firstName} ${form.lastName}`.trim(),
+        email: form.email,
+        password: form.password,
+        role: form.role,
+      });
 
       // after register → go to login
       goLogin();
@@ -43,7 +48,6 @@ export default function RegisterForm({ goLogin }) {
         </h2>
 
         <form onSubmit={submit} className="space-y-4">
-
           {/* First + Last */}
           <div className="grid grid-cols-2 gap-3">
             <input

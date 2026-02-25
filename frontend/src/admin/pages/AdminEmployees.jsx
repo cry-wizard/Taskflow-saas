@@ -13,15 +13,17 @@ import useUsers from "../hooks/useUsers";
 export default function AdminEmployees() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  /* ✅ REAL DATA FROM BACKEND */
-  const { users } = useUsers();
+  const { users, loading } = useUsers();
 
-  /* FILTER */
+  /* ✅ FILTER SAFE */
   const filteredTeam = useMemo(() => {
     return users.filter((member) =>
-      member.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.role?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      member.department?.toLowerCase().includes(searchQuery.toLowerCase())
+      (member.name || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      (member.role || "")
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase())
     );
   }, [users, searchQuery]);
 
@@ -64,32 +66,54 @@ export default function AdminEmployees() {
           </thead>
 
           <tbody className="divide-y">
-            {filteredTeam.map((member) => (
-              <motion.tr
-                key={member._id}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="hover:bg-slate-50"
-              >
-                <td className="px-8 py-5 font-medium">{member.name}</td>
-                <td className="px-8 py-5">{member.role}</td>
-                <td className="px-8 py-5">{member.department || "N/A"}</td>
-
-                <td className="px-8 py-5 flex gap-6">
-                  <button className="flex items-center gap-1 text-blue-600">
-                    <Pencil size={16} /> Edit
-                  </button>
-
-                  <button className="flex items-center gap-1 text-rose-500">
-                    <Trash2 size={16} /> Deactivate
-                  </button>
+            {loading ? (
+              <tr>
+                <td colSpan={4} className="px-8 py-10 text-center text-slate-400">
+                  Loading members...
                 </td>
-              </motion.tr>
-            ))}
+              </tr>
+            ) : filteredTeam.length === 0 ? (
+              <tr>
+                <td colSpan={4} className="px-8 py-10 text-center text-slate-400">
+                  No users found
+                </td>
+              </tr>
+            ) : (
+              filteredTeam.map((member) => (
+                <motion.tr
+                  key={member._id}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="hover:bg-slate-50"
+                >
+                  <td className="px-8 py-5 font-medium">
+                    {member.name || "Unnamed"}
+                  </td>
+
+                  <td className="px-8 py-5 capitalize">
+                    {member.role}
+                  </td>
+
+                  <td className="px-8 py-5">
+                    {member.department || "N/A"}
+                  </td>
+
+                  <td className="px-8 py-5 flex gap-6">
+                    <button className="flex items-center gap-1 text-blue-600">
+                      <Pencil size={16} /> Edit
+                    </button>
+
+                    <button className="flex items-center gap-1 text-rose-500">
+                      <Trash2 size={16} /> Deactivate
+                    </button>
+                  </td>
+                </motion.tr>
+              ))
+            )}
           </tbody>
         </table>
 
-        {/* PAGINATION UI ONLY */}
+        {/* PAGINATION UI */}
         <div className="px-8 py-5 flex justify-end gap-6 border-t">
           <button className="p-1.5 border rounded">
             <ChevronLeft size={20} />

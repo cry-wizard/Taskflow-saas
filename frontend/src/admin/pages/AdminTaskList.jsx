@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { Search, Plus, Pencil, Trash2 } from "lucide-react";
 import { motion } from "framer-motion";
+import api from "../../api/axios";
 
 import useTasks from "../hooks/useTasks";
 import PriorityBadge from "../components/PriorityBadge";
@@ -17,10 +18,16 @@ export default function AdminTaskList() {
   const [deleteTask, setDeleteTask] = useState(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
-  // ✅ Dynamic data from API
+  const [statusDrafts, setStatusDrafts] = useState({});
+  const [confirmTaskId, setConfirmTaskId] = useState(null);
+
+  const token = localStorage.getItem("token");
+  const userRole = token ? JSON.parse(atob(token.split(".")[1])).role : null;
+
+  /* 🔥 FETCH TASKS */
   const tasks = useTasks();
 
-  // ✅ Filter logic
+  /* 🔥 FILTER */
   const filteredTasks = useMemo(() => {
     return tasks.filter(
       (task) =>
@@ -35,12 +42,10 @@ export default function AdminTaskList() {
     <>
       {/* HEADER */}
       <header className="mb-8">
-        <h2 className="text-2xl font-bold text-[#1B2559]">
-          Admin Task Management List
-        </h2>
+        <h2 className="text-2xl font-bold text-[#1B2559]">Task Management</h2>
       </header>
 
-      {/* FILTER BAR */}
+      {/* SEARCH + ADD */}
       <div className="bg-white p-6 rounded-xl shadow-sm mb-6">
         <div className="flex flex-wrap items-center gap-4">
           <div className="relative flex-1 min-w-[300px]">
@@ -57,13 +62,15 @@ export default function AdminTaskList() {
             />
           </div>
 
-          <button
-            onClick={() => setIsCreateOpen(true)}
-            className="ml-auto bg-[#1D68D5] hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2"
-          >
-            <Plus size={18} />
-            Add New Task
-          </button>
+          {userRole === "admin" && (
+            <button
+              onClick={() => setIsCreateOpen(true)}
+              className="ml-auto bg-[#1D68D5] hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold flex items-center gap-2"
+            >
+              <Plus size={18} />
+              Add New Task
+            </button>
+          )}
         </div>
       </div>
 
@@ -110,38 +117,105 @@ export default function AdminTaskList() {
                 </td>
 
                 <td className="px-6 py-4 text-sm">
-                  {new Date(task.deadline).toLocaleDateString()}
+                  {task.deadline
+                    ? new Date(task.deadline).toLocaleDateString()
+                    : "N/A"}
                 </td>
 
                 <td className="px-6 py-4">{task.assignedTo?.name || "N/A"}</td>
 
-                <td className="px-6 py-4">
-                  <StatusBadge status={task.status} />
+                {/* STATUS COLUMN */}
+                <td className="px-6 py-4 relative">
+                  {userRole === "admin" ? (
+                    <StatusBadge status={task.status} />
+                  ) : (
+                    <>
+                      <select
+                        value={statusDrafts[task._id] ?? task.status}
+                        onChange={(e) => {
+                          setStatusDrafts((prev) => ({
+                            ...prev,
+                            [task._id]: e.target.value,
+                          }));
+                          setConfirmTaskId(task._id);
+                        }}
+                        className="border rounded-lg px-3 py-1 text-sm"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Completed">Completed</option>
+                      </select>
+
+                      {confirmTaskId === task._id && (
+                        <div className="mt-2 inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-lg shadow px-3 py-2">
+                          <button
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1 rounded-md"
+                            onClick={async () => {
+                              try {
+                                await api.patch(`/tasks/${task._id}/status`, {
+                                  status: statusDrafts[task._id],
+                                });
+
+                                setConfirmTaskId(null);
+                                window.location.reload();
+                              } catch (err) {
+                                console.log(err);
+                              }
+                            }}
+                          >
+                            Confirm
+                          </button>
+
+                          <button
+                            className="text-xs text-gray-500"
+                            onClick={() => {
+                              setConfirmTaskId(null);
+                              setStatusDrafts((prev) => {
+                                const copy = { ...prev };
+                                delete copy[task._id];
+                                return copy;
+                              });
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      )}
+                    </>
+                  )}
                 </td>
 
-                <td className="px-6 py-4 flex gap-2">
-                  <Pencil
-                    size={16}
-                    className="cursor-pointer"
-                    onClick={() => {
-                      setSelectedTask(task);
-                      setIsEditOpen(true);
-                    }}
-                  />
-                  <Trash2
-                    size={16}
-                    className="cursor-pointer text-red-500"
-                    onClick={() => {
-                      setDeleteTask(task);
-                      setIsDeleteOpen(true);
-                    }}
-                  />
+                {/* ACTION COLUMN (ADMIN ONLY) */}
+                <td className="px-6 py-4">
+                  {userRole === "admin" && (
+                    <div className="flex gap-2">
+                      <Pencil
+                        size={16}
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setSelectedTask(task);
+                          setIsEditOpen(true);
+                        }}
+                      />
+
+                      <Trash2
+                        size={16}
+                        className="cursor-pointer text-red-500"
+                        onClick={() => {
+                          setDeleteTask(task);
+                          setIsDeleteOpen(true);
+                        }}
+                      />
+                    </div>
+                  )}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </motion.div>
+
+      {/* MODALS */}
       <EditTaskModal
         isOpen={isEditOpen}
         task={selectedTask}
@@ -150,12 +224,14 @@ export default function AdminTaskList() {
           setSelectedTask(null);
         }}
       />
+
       <DeleteTaskModal
         isOpen={isDeleteOpen}
         task={deleteTask}
         onClose={() => setIsDeleteOpen(false)}
-        onDeleted={() => window.location.reload()} // later use refetch
+        onDeleted={() => window.location.reload()}
       />
+
       <CreateTaskModal
         isOpen={isCreateOpen}
         onClose={() => setIsCreateOpen(false)}
